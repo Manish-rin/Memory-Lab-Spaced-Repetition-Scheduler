@@ -41,7 +41,7 @@ Traditional flashcard applications rely on rigid, hand-tuned spacing rules (such
 
 ---
 
-## Syllabus Benchmark Results (236,911 Unseen-User Test Rows)
+## Benchmark Results (236,911 Unseen-User Test Rows)
 
 | Model | ROC-AUC | Log-Loss | Brier Score | Accuracy | Role |
 | :--- | :---: | :---: | :---: | :---: | :--- |
