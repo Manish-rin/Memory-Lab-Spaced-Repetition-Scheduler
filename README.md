@@ -1,21 +1,13 @@
 # MemoryLab: Adaptive Spaced-Repetition Memory Scheduler
 
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![Streamlit](https://img.shields.io/badge/app-Streamlit-ff4b4b)
-![Dataset License](https://img.shields.io/badge/dataset-CC--BY--NC--4.0-lightgrey)
-
-## Demonstration
-
-![Curve & Review Planner](images/planner.png)
-![Flashcard Simulator](images/flashcards.png)
-![Model Benchmark](images/benchmark.png)
-
-## Model Plots
-
-![Calibration Curve](images/calibration_curve.png)
-![Feature Importance](images/feature_importance.png)
-![Forgetting Curves](images/forgetting_curves.png)
-![SHAP Importance](images/shap_importance.png)
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Frontend-Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/ML-scikit--learn-F7931E?logo=scikitlearn&logoColor=white)
+![Polars](https://img.shields.io/badge/ETL-Polars-CD792C?logo=polars&logoColor=white)
+![Dataset](https://img.shields.io/badge/Dataset-MaiMemo_1.08M_Logs-6366F1)
+![ROC-AUC](https://img.shields.io/badge/Test_ROC--AUC-0.7076-10B981)
+![Dataset License](https://img.shields.io/badge/Dataset_License-CC--BY--NC--4.0-lightgrey)
 
 **MemoryLab** is an end-to-end machine learning system and interactive **Streamlit** app that models personalized Ebbinghaus forgetting curves from real student review logs. It then picks the next review interval right before predicted recall drops below a target retention threshold.
 
@@ -43,7 +35,6 @@ Instead of fixed schedules (`1 -> 3 -> 7 -> 15` days) or SM-2 style multipliers,
 7. [Limitations](#limitations)
 8. [Project Structure](#project-structure)
 9. [License & Citation](#license--citation)
-
 ---
 
 ## Quick Start
@@ -263,20 +254,26 @@ Diagnostic plots (calibration curves, SHAP, etc.) are written to `reports/`.
 ---
 
 ## Project Structure
-
 ```text
-.
-├── app.py                  # Streamlit scheduler dashboard
+├── server.py               # FastAPI inference API & static asset server
+├── static/
+│   └── index.html          # Single-page Tailwind CSS web app (Planner, Flashcards, Benchmarks)
 ├── src/
-│   ├── ingest.py           # user-hashed sampling + difficulty join
-│   ├── data_cleaning_*.ipynb
+│   ├── ingest.py           # User-hashed sampling + difficulty join
+│   ├── data_cleaning_dataset.ipynb
+│   ├── data_cleaning_difficulty.ipynb
 │   ├── features.py         # 17-feature Polars pipeline
-│   ├── train.py            # monotonic HGB + isotonic calibration
-│   └── evaluate.py         # metrics and diagnostic reports
+│   ├── train.py            # Monotonic HistGBDT + 3-fold isotonic calibration
+│   └── evaluate.py         # Out-of-sample metrics and diagnostic plot generator
+├── models/
+│   └── syllabus_gb_model.joblib  # Production calibrated monotonic model
 ├── data/
-│   └── raw/                # downloaded TSVs (not committed)
-├── reports/                # evaluation outputs and plots
-└── README.md
+│   ├── raw/                # Downloaded MaiMemo TSVs (gitignored)
+│   └── processed/          # Cleaned CSVs & engineered Parquet tables (gitignored)
+├── reports/                # Evaluation plots (calibration, SHAP, importance, curves)
+├── images/                 # UI screenshots & README visual assets
+├── .gitignore              # Excludes virtual environments, caches & multi-GB data
+└── README.md               # Project documentation & setup guide
 ```
 
 ---
@@ -296,3 +293,15 @@ Diagnostic plots (calibration curves, SHAP, etc.) are written to `reports/`.
   doi       = {10.1145/3534678.3539081}
 }
 ```
+## Demonstration
+
+![Curve & Review Planner](images/planner.png)
+![Flashcard Simulator](images/flashcards.png)
+![Model Benchmark](images/benchmark.png)
+
+## Model Plots
+
+![Calibration Curve](images/calibration_curve.png)
+![Feature Importance](images/feature_importance.png)
+![Forgetting Curves](images/forgetting_curves.png)
+![SHAP Importance](images/shap_importance.png)
