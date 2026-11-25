@@ -61,7 +61,7 @@ python src/evaluate.py    # write diagnostic reports to reports/
 streamlit run app.py
 ```
 
-> If you only want to try the app, you can skip steps 3-4 only if trained model artifacts are already present in the repo.
+> You can skip steps 3-4 and run only step 5 if trained model artifacts are already committed to the repo.
 
 ---
 
@@ -78,7 +78,7 @@ Platforms such as **MaiMemo**, **Duolingo** (Half-Life Regression) and **Anki** 
 
 A learner studies the card **`"ephemeral"`** (lexical difficulty $d = 8.80$):
 
-- **Review history:** `t_history = [0, 1, 3, 7]` days, `r_history = [0, 1, 1, 0]` (failed on day 0, recalled on days 1 and 3, lapsed after a 7-day gap)
+- **Review history:** `t_history = [0, 1, 3, 7]` days, `r_history = [0, 1, 1, 0]` (reviews separated by gaps of 0, 1, 3 and 7 days: failed, recalled, recalled, then lapsed after the 7-day gap)
 - **Target retention:** $\tau = 0.80$
 
 | Candidate Delay ($\Delta t$) | Predicted Recall $\hat{p}(\Delta t)$ | Meets $\tau \ge 0.80$? | Decision |
@@ -99,20 +99,20 @@ MemoryLab uses the open-source **MaiMemo Student Memory Logs** dataset, introduc
 
 ### Download
 
-1. Create a Hugging Face account and accept the **CC-BY-NC-4.0** terms at <https://huggingface.co/datasets/Maimemo/student-memory-logs>.
+1. Create a Hugging Face account and, if prompted, accept the **CC-BY-NC-4.0** terms at <https://huggingface.co/datasets/Maimemo/student-memory-logs>. (The full 220M-log release is also mirrored on [Harvard Dataverse](https://doi.org/10.7910/DVN/VAGUL0).)
 2. Download the two required files:
 
 ```bash
-pip install huggingface_hub
-huggingface-cli login
+pip install -U huggingface_hub
+hf auth login          # older versions: huggingface-cli login
 mkdir -p data/raw
-huggingface-cli download Maimemo/student-memory-logs opensource_dataset.tsv --repo-type dataset --local-dir data/raw
-huggingface-cli download Maimemo/student-memory-logs opensource_dataset_difficulty.tsv --repo-type dataset --local-dir data/raw
+hf download Maimemo/student-memory-logs opensource_dataset.tsv --repo-type dataset --local-dir data/raw
+hf download Maimemo/student-memory-logs opensource_dataset_difficulty.tsv --repo-type dataset --local-dir data/raw
 ```
 
 ### Scale
 
-- **Raw data:** about 15.5 GB, 220M+ logs.
+- **Raw data:** about 15.5 GB uncompressed, 220M+ logs.
 - **Sampled and cleaned corpus:** `1,081,771` review logs from `4,167` students, joined with lexical difficulty scores (`d`).
 - **Target (`r`):** `1` = recalled (75.86%), `0` = lapsed (24.14%).
 
@@ -192,9 +192,11 @@ Random row-level splits put reviews from the same student in both train and test
 
 ### C. Monotonic Gradient Boosted Trees
 
-`HistGradientBoostingClassifier` is trained with `monotonic_cst = -1` on `delta_t`, `log_delta_t`, `elapsed_to_last_ratio` and `d`. History-strength features are left unconstrained (`0`). For each constrained feature $j$:
+`HistGradientBoostingClassifier` is trained with `monotonic_cst = -1` on `delta_t`, `log_delta_t`, `elapsed_to_last_ratio` and `d`. History-strength features are left unconstrained (`0`). For each constrained feature $j$, holding all other features fixed:
 
 $$x_j^{(a)} > x_j^{(b)} \implies \hat{f}(\mathbf{x}^{(a)}) \le \hat{f}(\mathbf{x}^{(b)})$$
+
+Note that `delta_t`, `log_delta_t` and `elapsed_to_last_ratio` all increase together as the delay grows, so all three constraints point the same way and the curve over $\Delta t$ is non-increasing.
 
 This guarantees that, for a fixed word and history:
 
@@ -211,6 +213,8 @@ $$\Delta t^* = \max \left\{ \Delta t \in [1, 90] \;\middle|\; \hat{p}(\Delta t) 
 
 Because $\hat{p}$ is monotonically non-increasing in $\Delta t$, this is the last day before predicted recall falls below $\tau$.
 
+> **Edge case:** if even $\Delta t = 1$ falls below $\tau$, the set is empty and $\Delta t^*$ is undefined. The app should fall back to a 1-day review; make sure `app.py` handles this explicitly.
+
 ---
 
 ## Results
@@ -222,6 +226,8 @@ All models were trained on the same 844,860-row user-grouped training set and ev
 | Logistic Regression (`StandardScaler` + L2) | 0.7008 | 0.5009 | 0.1637 | 76.55% | Linear baseline |
 | Random Forest (100 trees, `max_depth=16`) | 0.7070 | 0.4975 | 0.1624 | 76.74% | Non-linear ensemble |
 | **HistGB + Monotonic + Isotonic** | **0.7076** | **0.4971** | **0.1623** | **76.76%** | **Selected scheduler** |
+
+**Context:** a model that always predicts "recalled" already scores 75.86% accuracy (the class balance), so accuracy gains here are small in absolute terms. Judge the models by AUC, log-loss, Brier score and calibration.
 
 **Takeaway:** the monotonic, calibrated model matches or slightly beats the unconstrained models on accuracy metrics while guaranteeing physically sensible forgetting curves. The main benefit is trustworthy, monotone probabilities, not a large jump in AUC.
 
@@ -272,6 +278,8 @@ Diagnostic plots (calibration curves, SHAP, etc.) are written to `reports/`.
   title     = {A Stochastic Shortest Path Algorithm for Optimizing Spaced Repetition Scheduling},
   author    = {Ye, Junyao and Su, Jingyong and Cao, Yilong},
   booktitle = {Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining},
-  year      = {2022}
+  pages     = {4381--4390},
+  year      = {2022},
+  doi       = {10.1145/3534678.3539081}
 }
 ```
