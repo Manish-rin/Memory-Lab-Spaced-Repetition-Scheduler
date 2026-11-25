@@ -9,7 +9,7 @@
 ![ROC-AUC](https://img.shields.io/badge/Test_ROC--AUC-0.7076-10B981)
 ![Dataset License](https://img.shields.io/badge/Dataset_License-CC--BY--NC--4.0-lightgrey)
 
-**MemoryLab** is an end-to-end machine learning system and interactive **Streamlit** app that models personalized Ebbinghaus forgetting curves from real student review logs. It then picks the next review interval right before predicted recall drops below a target retention threshold.
+**MemoryLab** is an end-to-end machine learning system and interactive app that models personalized Ebbinghaus forgetting curves from real student review logs. It then picks the next review interval right before predicted recall drops below a target retention threshold.
 
 Instead of fixed schedules (`1 -> 3 -> 7 -> 15` days) or SM-2 style multipliers, MemoryLab predicts the recall probability $P(r_i = 1 \mid \mathbf{x}_i, \Delta t)$ for every candidate delay $\Delta t \in [1, 90]$ days, using **monotonically constrained, isotonic-calibrated Gradient Boosted Decision Trees**.
 
