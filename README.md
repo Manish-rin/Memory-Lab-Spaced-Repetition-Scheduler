@@ -89,7 +89,7 @@ A learner studies the card **`"ephemeral"`** (lexical difficulty $d = 8.80$):
 | :---: | :---: | :---: | :--- |
 | 1 day | 88.4% | Yes | Too early; retention far above target |
 | 3 days | 83.1% | Yes | Safe, but wastes some memory stability |
-| **5 days** | **80.2%** | **Yes** | **Optimal ($\Delta t^* = 5$)** |
+| **5 days** | **80.2%** | **Yes** | **Optimal** ($\Delta t^{\ast} = 5$) |
 | 6 days | 78.9% | No | Falls below target |
 | 14 days | 64.5% | No | High risk of forgetting |
 
